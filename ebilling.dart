@@ -16,7 +16,7 @@ class EbillingModel{
   var domain = "https://stg.billing-easy.com"; // Url prod
 
    //A utiliser lorsque vous êtes en environnement test
-  var domain = "https://test.billing-easy.com" // Url test
+  var domain = "https://lab.billing-easy.com" // Url test
 
   var  basicAuth;
 
