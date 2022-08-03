@@ -5,18 +5,38 @@ import 'package:http/http.dart' as http;
 import '../main.dart';
 
 
+/*
+--------------------------------------------------
+                    FLUBILLING
+---------------------------------------------------
+
+Intégration Ebilling sur Flutter
+version: 1.0.0
+
+
+Informations supplémentaires
+----------------------------
+
+payment_system_name = airtelmoney (pour Airtel Money)
+payment_system_name = moovmoney4 (pour Mobicash)
+
+
+*/
+
 
 class EbillingModel{
 
-  // Auth credentials
+  // Identifiants d'authentification
   var username = ""; // username
   var sharedkey = ""; //sharedKey
 
+  // En env prod
   //A utiliser lorsque vous êtes en environnement Prod
-  var domain = "https://stg.billing-easy.com"; // Url prod
+  var domain = "https://stg.billing-easy.com"; 
 
-   //A utiliser lorsque vous êtes en environnement test
-  var domain = "https://lab.billing-easy.com" // Url test
+  // En env dev
+  //A utiliser lorsque vous êtes en environnement Dev
+  var domain = "https://lab.billing-easy.net" 
 
   var  basicAuth;
 
@@ -29,7 +49,7 @@ class EbillingModel{
   }
 
 
-  // Appeler cette fonction lorsque l'utilisateur clique sur le bouton"Payer" dans votre app mobile
+  // Appelez cette fonction lorsque l'utilisateur clique sur le bouton"Payer" dans votre app mobile
   void procedePayment(double amount, String desc, String clientPhone,
       String clientEmail, clientTransId, String paymentMethod) async {
 
@@ -46,7 +66,7 @@ class EbillingModel{
 
   }
 
-  // Get the state of the invoice
+  // Récupère l'état de la facture
   void getInvoiceStateFunc(invoiceId, requestHeaders, paymentMethod) async {
 
     var getInvoiceUrl = "$domain/api/v1/merchant/e_bills/$invoiceId";
@@ -60,14 +80,23 @@ class EbillingModel{
 
     if (invoiceState == "processed"){
       print("Paiement réussi")
+
+    /* 
+      Une fois le paiement réussi, vous pouvez enregister les informations de la transaction dans votre base de données.
+      Pour cela :
+          - Ecrivez une fonction qui enregistre les infos dans la BD (dans un autre fichier)
+          - Appeler cette fonction ici 
+      */
+      
+    
     }
     else{
       print("Paiement échoué")
     }
   }
 
-  // Run ussd push prompt
-  // Ouvrir la fenêtre ussd sur votre téléphone, l'utilisateur n'aura qu'à rentrer son mot de passe pour valider le paiement
+
+  // Ouvre la fenêtre ussd sur le téléphone. L'utilisateur n'aura qu'à rentrer son mot de passe pour valider le paiement
   void ussdPushFunc(invoiceId, requestHeaders, paymentMethod, clientPhone) async {
 
     var ussdPushUrl = "$domain/api/v1/merchant/e_bills/$invoiceId/ussd_push";
@@ -86,14 +115,14 @@ class EbillingModel{
 
     if (ussdPushResponse.statusCode == 202){
 
-      // Vérifier l'état de la transaction après 30 secondes
+      // Vérifie l'état de la transaction après 30 secondes
       Timer(
           Duration(seconds: 30), () => getInvoiceStateFunc(invoiceId, requestHeaders, paymentMethod)
       );
     }
   }
 
-  // Create the invoice
+  // Crée la facture
   void createBillFunc(clientTransId, clientEmail, clientPhone, amount, desc, requestHeaders, paymentMethod) async {
 
     var apiUrl = "$domain/api/v1/merchant/e_bills";
@@ -124,7 +153,7 @@ class EbillingModel{
       ussdPushFunc(invoiceId, requestHeaders, paymentMethod, clientPhone);
     }
     else {
-      throw Exception('Failed to load response');
+      throw Exception('Impossible de charger la réponse');
     }
   }
 }
